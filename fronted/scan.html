@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scan QR</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+    <h2>Scan QR Kode Pemilih</h2>
+
+    <div id="qr-reader" style="width:300px"></div>
+
+    <script>
+        function onScanSuccess(decodedText) {
+            alert("NIM terdeteksi: " + decodedText);
+            window.location = "result.html?nim=" + decodedText;
+        }
+
+        new Html5QrcodeScanner("qr-reader", {
+            fps: 10,
+            qrbox: 250
+        }).render(onScanSuccess);
+    </script>
+</body>
+</html>

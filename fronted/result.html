@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hasil Voting</title>
+</head>
+<body>
+    <h2>Hasil Voting Sementara</h2>
+
+    <div id="results"></div>
+
+    <script>
+        async function load() {
+            const res = await fetch("/api/candidate");
+            const data = await res.json();
+
+            let html = "<ul>";
+            data.data.forEach(c => {
+                html += `<li>${c.name}</li>`;
+            });
+            html += "</ul>";
+
+            document.getElementById("results").innerHTML = html;
+        }
+
+        load();
+    </script>
+</body>
+</html>
