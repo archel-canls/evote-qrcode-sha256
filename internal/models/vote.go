@@ -1,9 +1,12 @@
 package models
 
-// Vote represents a voting record
+import "gorm.io/gorm"
+
 type Vote struct {
-	ID          uint   `gorm:"primaryKey"`
-	VoterNIM    string `gorm:"not null"`
-	CandidateID uint   `gorm:"not null"`
-	Hash        string `gorm:"type:text;not null"`
+	gorm.Model
+
+	VoterID     uint `gorm:"not null;index;uniqueIndex:idx_voter_once"`
+	CandidateID uint `gorm:"not null;index"`
+
+	VoteHash string `gorm:"type:char(64);uniqueIndex;not null"` // SHA-256 hex
 }

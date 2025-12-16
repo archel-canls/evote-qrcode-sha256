@@ -2,56 +2,49 @@ package main
 
 import (
 	"log"
-	"os"
 
-	"evote/internal/config"
-	"evote/internal/database"
-	"evote/internal/models"
-	"evote/internal/routes"
-
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"evote-qrcode-sha256/internal/config"
+	"evote-qrcode-sha256/internal/database"
+	"evote-qrcode-sha256/internal/models"
+	"evote-qrcode-sha256/internal/routes"
 )
 
 func main() {
-
-	// 1. Load environment variables
+	// =============================
+	// 1. Load Environment Variable
+	// =============================
 	config.LoadEnv()
 
-	// 2. Connect to PostgreSQL
+	// =============================
+	// 2. Connect Database
+	// =============================
 	database.Connect()
 
-	// 3. Auto-migrate DB schema
-	err := database.DB.AutoMigrate(
-		&models.Voter{},
+	// =============================
+	// 3. Auto Migration
+	// =============================
+	if err := database.DB.AutoMigrate(
+		&models.Admin{},
 		&models.Candidate{},
+		&models.Voter{},
 		&models.Vote{},
-	)
-	if err != nil {
-		log.Fatal("AutoMigrate failed:", err)
+	); err != nil {
+		log.Fatalf("❌ AutoMigrate failed: %v", err)
 	}
+	log.Println("✅ Database migrated")
 
-	// 4. Setup Gin HTTP server
-	r := gin.Default()
-	r.Use(cors.Default())
+	// =============================
+	// 4. Setup Router
+	// =============================
+	r := routes.SetupRouter()
 
-	// 5. Serve static frontend
-	r.Static("/static", "./frontend")
-	r.LoadHTMLGlob("frontend/*.html")
+	// =============================
+	// 5. Run Server
+	// =============================
+	port := config.GetEnv("PORT", "8080")
+	log.Printf("🚀 Server running on http://localhost:%s", port)
 
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(200, "index.html", nil)
-	})
-
-	// 6. Register all API routes
-	routes.RegisterRoutes(r)
-
-	// 7. Run server on port from .env or fallback to 8080
-	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		port = "8080"
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("❌ Server failed: %v", err)
 	}
-
-	log.Println("🚀 E-Voting server running on port", port)
-	r.Run(":" + port)
 }

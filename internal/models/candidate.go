@@ -1,7 +1,10 @@
 package models
 
-// Candidate represents election candidates
+import "time"
+
 type Candidate struct {
-	ID   uint   `gorm:"primaryKey"`
-	Name string `gorm:"not null"`
+	ID          uint      `gorm:"primaryKey" json:"ID"`
+	Name        string    `json:"Name"`
+	Description string    `json:"Description"`
+	CreatedAt   time.Time `json:"CreatedAt"`
 }

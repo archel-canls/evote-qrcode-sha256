@@ -1,8 +1,11 @@
 package models
 
-// Voter represents each registered voter
+import "gorm.io/gorm"
+
 type Voter struct {
-	ID      uint   `gorm:"primaryKey"`
-	NIM     string `gorm:"unique;not null"`
-	QRImage string `gorm:"type:text"` // store QR code (base64)
+	gorm.Model
+	Name     string `gorm:"type:varchar(100);not null"`
+	Email    string `gorm:"type:varchar(150);uniqueIndex;not null"`
+	QRToken  string `gorm:"type:char(64);uniqueIndex;not null"` // SHA-256 hex
+	HasVoted bool   `gorm:"default:false"`
 }

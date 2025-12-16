@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan QR Pemilih | e-Voting</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+:root {
+    --primary: #2563eb;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+}
+
+body.dark {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e5e7eb;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* Header */
+header {
+    background: var(--primary);
+    color: white;
+    padding: 18px;
+    text-align: center;
+    position: relative;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+#themeBtn {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Card */
+.container {
+    max-width: 420px;
+    margin: 40px auto;
+    background: var(--card);
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 15px 35px rgba(0,0,0,.15);
+    animation: fadeUp .6s ease;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.desc {
+    text-align: center;
+    font-size: .9rem;
+    opacity: .8;
+    margin-bottom: 20px;
+}
+
+/* QR */
+#qr-reader {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px dashed #cbd5e1;
+}
+
+/* Buttons */
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.primary {
+    background: var(--primary);
+    color: white;
+}
+
+.secondary {
+    background: #e2e8f0;
+}
+
+.status {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: .9rem;
+    text-align: center;
+}
+
+.wait {
+    background: #fef3c7;
+}
+
+.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.error {
+    background: #fee2e2;
+    color: #7f1d1d;
+}
+
+/* Manual Input */
+.manual {
+    display: none;
+    margin-top: 15px;
+}
+
+.manual input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: .8rem;
+    opacity: .6;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🗳️ Sistem e-Voting</h1>
+    <button id="themeBtn">🌙</button>
+</header>
+
+<div class="container">
+    <h2>Scan QR Pemilih</h2>
+    <p class="desc">Arahkan kamera ke QR token pemilih</p>
+
+    <div id="qr-reader"></div>
+
+    <div class="actions">
+        <button class="primary" onclick="switchCamera()">Ganti Kamera</button>
+        <button class="secondary" onclick="toggleManual()">Input Manual</button>
+    </div>
+
+    <div class="manual" id="manualBox">
+        <input type="text" id="manualToken" placeholder="Masukkan token">
+        <button class="primary" onclick="submitManual()">Verifikasi</button>
+    </div>
+
+    <div id="status" class="status wait">Menunggu QR Code...</div>
+</div>
+
+<footer>
+    © 2025 Sistem e-Voting • Aman • Cepat • Terpercaya
+</footer>
+
+<script>
+let qr;
+let cams = [];
+let camIndex = 0;
+
+/* Init camera */
+Html5Qrcode.getCameras().then(devices => {
+    cams = devices;
+    startScan(cams[0].id);
+});
+
+function startScan(camId) {
+    qr = new Html5Qrcode("qr-reader");
+    qr.start(
+        camId,
+        { fps: 10, qrbox: 250 },
+        onSuccess,
+        () => {}
+    );
+}
+
+function onSuccess(text) {
+    qr.stop();
+    document.getElementById("status").className = "status success";
+    document.getElementById("status").innerText = "Token valid: " + text;
+
+    setTimeout(() => {
+        window.location.href = "/vote?token=" + text;
+    }, 1500);
+}
+
+function switchCamera() {
+    qr.stop().then(() => {
+        camIndex = (camIndex + 1) % cams.length;
+        startScan(cams[camIndex].id);
+    });
+}
+
+/* Manual input */
+function toggleManual() {
+    const box = document.getElementById("manualBox");
+    box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+function submitManual() {
+    const token = document.getElementById("manualToken").value.trim();
+    if (!token) return alert("Token tidak boleh kosong");
+    onSuccess(token);
+}
+
+/* Dark mode */
+document.getElementById("themeBtn").onclick = () => {
+    document.body.classList.toggle("dark");
+    document.getElementById("themeBtn").innerText =
+        document.body.classList.contains("dark") ? "☀️" : "🌙";
+};
+</script>
+
+</body>
+</html>

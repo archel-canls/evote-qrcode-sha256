@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>e-Voting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 16px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease;
+        }
+
+        h1 {
+            margin-bottom: 25px;
+            font-size: 26px;
+        }
+
+        ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        li a {
+            display: block;
+            padding: 15px;
+            background: #ffffff;
+            color: #1e293b;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        li a:hover {
+            transform: translateY(-4px) scale(1.02);
+            background: #f1f5f9;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+        }
+
+        li a span {
+            display: block;
+            font-size: 13px;
+            font-weight: normal;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🗳️ Selamat Datang di e-Voting</h1>
+
+        <ul>
+            <li>
+                <a href="/admin">
+                    🧑‍💼 Admin Panel
+                    <span>Pilih & kelola kandidat</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="/vote">
+                    📱 Mulai Voting
+                    <span>Pindai QR atau masukkan token</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <footer>
+        &copy; 2025 Sistem E-Voting Demo • Aman • Cepat • Terpercaya
+    </footer>
+
+</body>
+</html>
