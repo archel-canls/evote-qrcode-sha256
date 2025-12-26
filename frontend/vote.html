@@ -3,380 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vote - Sistem E-Voting</title>
+    <title>🗳️ E-Voting - Scan & Vote</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #ffffff 0%, #764ba2 100%);
-            margin: 0;
-            padding: 0;
-            color: #333333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .header {
-            background-color: rgba(0, 123, 255, 0.9);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        body { font-family: 'Segoe UI', sans-serif; background:#06b6d4; color:#fff; display:flex; justify-content:center; padding: 20px; margin: 0; }
+        .container { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 25px; border-radius:16px; width:100%; max-width:480px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        
+        /* --- PEMBARUAN VISUAL SCANNER --- */
+        .scanner-wrapper {
+            position: relative;
             width: 100%;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 300;
-        }
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 600px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin: 20px 0;
-        }
-        h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            margin-bottom: 20px;
-            color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1rem;
-            margin-bottom: 30px;
-            line-height: 1.5;
-        }
-        label {
-            display: block;
-            margin-bottom: 10px;
-            color: #ffffff;
-            font-weight: 500;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            margin-bottom: 20px;
-        }
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        input:focus {
-            outline: none;
-            border-color: #ffffff;
-        }
-        button {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            padding: 12px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        #qr-display {
-            margin-top: 20px;
-            display: none;
-        }
-        #qr-display img {
-            max-width: 200px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-        }
-        #qr-scanner {
-            display: none;
-            margin-top: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
+            margin-bottom: 15px;
+            border-radius: 12px;
             overflow: hidden;
-            max-width: 300px;
-            margin: 0 auto;
+            background: #000;
         }
-        #qr-scanner video {
+
+        #reader { 
+            width: 100%; 
+            border: none !important; /* Hapus border default library */
+        }
+
+        /* Garis pemindai animasi */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 4px;
+            background: rgba(74, 222, 128, 0.8);
+            box-shadow: 0 0 15px 5px rgba(74, 222, 128, 0.5);
+            z-index: 10;
+            pointer-events: none;
+            animation: moveLine 2.5s ease-in-out infinite;
+            display: none; /* Muncul hanya saat kamera aktif */
         }
-        #candidates {
-            margin-top: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
+
+        @keyframes moveLine {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
         }
-        .candidate-btn {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            padding: 15px 25px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            min-width: 150px;
+
+        /* Dekorasi sudut (High-tech corners) */
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 4px solid #fff;
+            z-index: 20;
+            pointer-events: none;
         }
-        .candidate-btn:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        .top-left { top: 10px; left: 10px; border-right: none; border-bottom: none; border-radius: 4px 0 0 0; }
+        .top-right { top: 10px; right: 10px; border-left: none; border-bottom: none; border-radius: 0 4px 0 0; }
+        .bottom-left { bottom: 10px; left: 10px; border-right: none; border-top: none; border-radius: 0 0 0 4px; }
+        .bottom-right { bottom: 10px; right: 10px; border-left: none; border-top: none; border-radius: 0 0 4px 0; }
+
+        /* Sembunyikan elemen internal library yang mengganggu */
+        #reader img[alt="Info icon"] { display: none; }
+        #reader button { 
+            background: #4f46e5 !important; 
+            color: white !important; 
+            border: none !important; 
+            padding: 8px 15px !important; 
+            border-radius: 6px !important;
+            font-weight: bold;
         }
-        .candidate-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-        .message.success {
-            background-color: rgba(40, 167, 69, 0.8);
-            color: #ffffff;
-        }
-        .message.error {
-            background-color: rgba(220, 53, 69, 0.8);
-            color: #ffffff;
-        }
-        footer {
-            margin-top: 40px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-        }
-        #qr-file {
-            display: none;
-        }
+
+        /* --- STYLE LAINNYA --- */
+        .upload-section { border: 2px dashed rgba(255,255,255,0.5); padding: 15px; border-radius: 12px; margin: 15px 0; background: rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
+        .upload-section:hover { background: rgba(255,255,255,0.2); border-color: #fff; }
+        input, button { padding:12px; margin:10px 0; width:100%; border-radius:8px; border:none; box-sizing: border-box; }
+        button { background:#4f46e5; color:#fff; font-weight:bold; cursor:pointer; transition: 0.3s; }
+        button:hover { background: #3730a3; }
+        .candidate-card { background:#fff; color:#1e293b; padding:15px; margin:12px 0; border-radius:12px; cursor:pointer; text-align: left; transition: 0.2s; border: 3px solid transparent; }
+        .candidate-card:hover { border-color: #4f46e5; transform: scale(1.02); }
+        #voting-section, #qr-result, #loading { display: none; }
+        .step-title { font-size: 1.2rem; margin-bottom: 10px; display: block; font-weight: bold; }
+        
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 30px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); display: flex; align-items: center; z-index: 1000; box-sizing: border-box; }
+        .navbar a { color: white; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        body { padding-top: 80px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Sistem E-Voting</h1>
-    </div>
-    
+    <nav class="navbar">
+        <a href="/">← Kembali ke Beranda</a>
+    </nav>
+
     <div class="container">
-        <h1>Vote</h1>
-        <p>Masukkan token (string dari QR) atau scan QR langsung di bawah.</p>
-        
-        <label for="token">Token:</label>
-        <input id="token" type="text" placeholder="Masukkan token atau scan QR" />
-        <button id="uploadQR">Upload Gambar QR</button>
-        <input id="qr-file" type="file" accept="image/*" />
-        <button id="showQR">Tampilkan QR</button>
-        <button id="scanQR">Scan QR</button>
-        <button id="loadCandidates">Muat Kandidat</button>
-        
-        <div id="qr-display">
-            <h3>QR Code Token</h3>
-            <img id="qr-image" src="" alt="QR Code" />
-            <br>
-            <button id="downloadQR">Download QR</button>
+        <h2>🗳️ Sistem E-Voting</h2>
+
+        <div id="auth-section">
+            <span class="step-title">Langkah 1: Verifikasi Identitas</span>
+            
+            <div class="scanner-wrapper">
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
+                <div class="scan-line" id="animated-line"></div>
+                <div id="reader"></div> 
+            </div>
+            
+            <div class="upload-section" onclick="document.getElementById('qr-input-file').click()">
+                <span>🖼️ Pilih Gambar QR dari Perangkat</span>
+                <input type="file" id="qr-input-file" accept="image/*" style="display:none">
+            </div>
+
+            <p style="margin: 10px 0;">— ATAU —</p>
+            <input type="text" id="token-input" placeholder="Masukkan 6 digit kode token manual">
+            <button onclick="verifyVoter()">Verifikasi & Lanjut</button>
         </div>
-        
-        <div id="qr-scanner"></div>
-        
-        <div id="candidates"></div>
-        
-        <div id="message" class="message" style="display: none;"></div>
+
+        <div id="loading">
+            <p>🔄 Memproses Identitas...</p>
+        </div>
+
+        <div id="voting-section">
+            <span class="step-title">Langkah 2: Gunakan Hak Suara Anda</span>
+            <div id="candidate-list"></div>
+        </div>
+
+        <div id="qr-result">
+            <h3 style="color: #4ade80;">✅ Vote Berhasil!</h3>
+            <p>Hash Suara (SHA-256):</p>
+            <div id="vote-hash" style="font-size: 0.7rem; margin-bottom: 10px; word-break: break-all; opacity: 0.8;"></div>
+            <img id="result-qr" style="width: 200px; background: #fff; padding: 10px; border-radius: 10px;" />
+            <button onclick="location.reload()" style="background: #64748b;">Kembali ke Beranda</button>
+        </div>
     </div>
-    
-    <footer>
-        &copy; 2023 Sistem E-Voting Demo. Aman, Cepat, dan Terpercaya.
-    </footer>
 
     <script>
-        let scanner;
-
-        document.getElementById('uploadQR').addEventListener('click', () => {
-            document.getElementById('qr-file').click();
-        });
-
-        document.getElementById('qr-file').addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    if (code) {
-                        document.getElementById('token').value = code.data;
-                        showMessage('Token berhasil diekstrak dari gambar QR!', 'success');
-                    } else {
-                        showMessage('QR code tidak ditemukan di gambar.', 'error');
-                    }
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        document.getElementById('showQR').addEventListener('click', async () => {
-            const token = document.getElementById('token').value.trim();
-            if (!token) {
-                showMessage('Masukkan token yang valid.', 'error');
-                return;
-            }
-            try {
-                const res = await fetch(`/api/qr?token=${encodeURIComponent(token)}`);
-                if (!res.ok) throw new Error('Gagal memuat QR');
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                document.getElementById('qr-image').src = url;
-                document.getElementById('qr-display').style.display = 'block';
-                showMessage('QR berhasil dimuat.', 'success');
-            } catch (error) {
-                showMessage('Terjadi kesalahan: ' + error.message, 'error');
-            }
-        });
-
-        document.getElementById('downloadQR').addEventListener('click', () => {
-            const img = document.getElementById('qr-image');
-            if (!img.src) {
-                showMessage('Tidak ada QR untuk didownload.', 'error');
-                return;
-            }
-            const link = document.createElement('a');
-            link.href = img.src;
-            link.download = 'qr-token.png';
-            link.click();
-            showMessage('QR berhasil didownload.', 'success');
-        });
-
-        document.getElementById('scanQR').addEventListener('click', () => {
-            const scannerDiv = document.getElementById('qr-scanner');
-            if (scannerDiv.style.display === 'block') {
-                scannerDiv.style.display = 'none';
-                if (scanner) scanner.clear();
-                document.getElementById('scanQR').textContent = 'Scan QR';
-            } else {
-                scannerDiv.style.display = 'block';
-                document.getElementById('scanQR').textContent = 'Tutup Scanner';
-                scanner = new Html5QrcodeScanner("qr-scanner", {
-                    fps: 10,
-                    qrbox: 250
-                });
-                scanner.render(onScanSuccess, onScanFailure);
-            }
-        });
-
-        function onScanSuccess(decodedText) {
-            document.getElementById('token').value = decodedText;
-            document.getElementById('qr-scanner').style.display = 'none';
-            document.getElementById('scanQR').textContent = 'Scan QR';
-            if (scanner) scanner.clear();
-            showMessage('Token berhasil dipindai!', 'success');
-        }
-
-        function onScanFailure(error) {
-            console.log('Scan failure:', error);
-        }
-
-        document.getElementById('loadCandidates').addEventListener('click', async () => {
-            const token = document.getElementById('token').value.trim();
-            if (!token) {
-                showMessage('Masukkan token yang valid.', 'error');
-                return;
-            }
-            
-            const button = document.getElementById('loadCandidates');
-            button.disabled = true;
-            button.textContent = 'Memuat...';
-            
-            try {
-                const res = await fetch('/api/candidates');
-                if (!res.ok) throw new Error('Gagal memuat kandidat');
-                const list = await res.json();
-                
-                const container = document.getElementById('candidates');
-                container.innerHTML = '';
-                
-                if (list.length === 0) {
-                    container.innerHTML = '<p style="color: rgba(255,255,255,0.9);">Tidak ada kandidat tersedia.</p>';
-                    return;
-                }
-                
-                list.forEach(c => {
-                    const btn = document.createElement('button');
-                    btn.className = 'candidate-btn';
-                    btn.textContent = c.Name || c.name || 'Kandidat';
-                    btn.onclick = async () => {
-                        btn.disabled = true;
-                        btn.textContent = 'Voting...';
-                        
-                        try {
-                            const resp = await fetch('/api/vote', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ token, candidate_id: c.ID || c.id || c.ID })
-                            });
-                            const j = await resp.json();
-                            if (resp.ok) {
-                                showMessage('Vote berhasil! ' + JSON.stringify(j), 'success');
-                                container.innerHTML = '<p style="color: rgba(255,255,255,0.9);">Terima kasih telah voting. Halaman akan dimuat ulang.</p>';
-                                setTimeout(() => location.reload(), 3000);
-                            } else {
-                                showMessage('Vote gagal: ' + JSON.stringify(j), 'error');
-                            }
-                        } catch (error) {
-                            showMessage('Terjadi kesalahan: ' + error.message, 'error');
-                        } finally {
-                            btn.disabled = false;
-                            btn.textContent = c.Name || c.name || 'Kandidat';
-                        }
-                    };
-                    container.appendChild(btn);
-                });
-                
-                showMessage('Kandidat berhasil dimuat.', 'success');
-            } catch (error) {
-                showMessage('Terjadi kesalahan: ' + error.message, 'error');
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Muat Kandidat';
-            }
+        // Inisialisasi Scanner [cite: 25]
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+            fps: 15, // Peningkatan FPS agar garis terlihat lebih mulus
+            qrbox: {width: 250, height: 250},
+            rememberLastUsedCamera: true
         });
         
-        function showMessage(text, type) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = text;
-            messageDiv.className = 'message ' + type;
-            messageDiv.style.display = 'block';
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
+        html5QrcodeScanner.render(onScanSuccess);
+
+        // Pantau kapan kamera aktif untuk memunculkan garis scan
+        const observer = new MutationObserver(() => {
+            const line = document.getElementById("animated-line");
+            const video = document.querySelector("#reader video");
+            if (video) {
+                line.style.display = "block";
+            } else {
+                line.style.display = "none";
+            }
+        });
+        observer.observe(document.getElementById("reader"), { childList: true, subtree: true });
+
+        function onScanSuccess(decodedText) {
+            document.getElementById("token-input").value = decodedText;
+            html5QrcodeScanner.clear(); 
+            verifyVoter();
+        }
+
+        const fileInput = document.getElementById('qr-input-file');
+        fileInput.addEventListener('change', e => {
+            if (e.target.files.length == 0) return;
+            const imageFile = e.target.files[0];
+            const html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.scanFile(imageFile, true)
+                .then(decodedText => {
+                    document.getElementById("token-input").value = decodedText;
+                    verifyVoter();
+                })
+                .catch(err => {
+                    alert("Gagal membaca QR!");
+                    console.error(err);
+                });
+        });
+
+        async function verifyVoter() {
+            const token = document.getElementById("token-input").value.trim();
+            if (!token) return alert("Pindai QR atau masukkan kode!");
+            document.getElementById("auth-section").style.display = "none";
+            document.getElementById("loading").style.display = "block";
+            try {
+                const res = await fetch("/api/candidates");
+                const candidates = await res.json();
+                if (res.ok) {
+                    showCandidates(candidates);
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("voting-section").style.display = "block";
+                } else { throw new Error("Gagal memuat kandidat"); }
+            } catch (err) { alert(err.message); location.reload(); }
+        }
+
+        function showCandidates(list) {
+            const container = document.getElementById("candidate-list");
+            container.innerHTML = "";
+            list.forEach(c => {
+                container.innerHTML += `
+                    <div class="candidate-card" onclick="submitVote(${c.id})">
+                        <strong>${c.name}</strong><br>
+                        <small>${c.description || 'Visi & Misi tersedia di profil.'}</small>
+                    </div>
+                `;
+            });
+        }
+
+        async function submitVote(candidateId) {
+            if (!confirm("Konfirmasi: Anda yakin dengan pilihan ini?")) return;
+            const token = document.getElementById("token-input").value.trim();
+            try {
+                const res = await fetch("/api/vote", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ token, candidate_id: candidateId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById("voting-section").style.display = "none";
+                    document.getElementById("qr-result").style.display = "block";
+                    document.getElementById("result-qr").src = data.qr;
+                    document.getElementById("vote-hash").innerText = data.hash;
+                } else { alert("Vote Gagal: " + (data.error || "Terjadi kesalahan")); location.reload(); }
+            } catch (err) { alert("Kesalahan koneksi ke server."); }
         }
     </script>
 </body>

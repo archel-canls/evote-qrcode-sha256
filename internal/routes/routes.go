@@ -1,49 +1,43 @@
 package routes
 
 import (
-	"net/http"
-
 	"evote-qrcode-sha256/internal/handlers"
 	"evote-qrcode-sha256/internal/middleware"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	r.LoadHTMLGlob("frontend/*.html")
 
-	// =============================
-	// Static / Frontend
-	// =============================
-	r.Static("/static", "./web/static")
-	r.LoadHTMLGlob("web/*.html")
+	// --- HALAMAN HTML (PUBLIC) ---
+	r.GET("/", func(c *gin.Context) { c.HTML(http.StatusOK, "index.html", nil) })
+	r.GET("/admin/login", func(c *gin.Context) { c.HTML(http.StatusOK, "admin_login.html", nil) })
+	r.GET("/admin", func(c *gin.Context) { c.HTML(http.StatusOK, "admin.html", nil) })
+	r.GET("/vote", func(c *gin.Context) { c.HTML(http.StatusOK, "vote.html", nil) })
+	r.GET("/voter/create", func(c *gin.Context) { c.HTML(http.StatusOK, "create_voter.html", nil) })
 
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", nil)
-	})
-
-	// =============================
-	// API Group
-	// =============================
-	api := r.Group("/api") // ✅ INI YANG KAMU LUPA
+	api := r.Group("/api")
 	{
-		// ---------- Admin Login ----------
 		api.POST("/admin/login", handlers.AdminLogin)
+		api.POST("/vote", handlers.SubmitVote)
+		api.GET("/candidates", handlers.GetCandidates)
 
-		// ---------- Protected Admin ----------
+		// ✅ PERBAIKAN: Rute pendaftaran publik (Harus sama dengan di HTML)
+		api.POST("/voters/register", handlers.CreateVoter)
+
+		// --- ADMIN (PROTECTED) ---
 		admin := api.Group("/admin")
 		admin.Use(middleware.AdminJWT())
 		{
-			// Candidates
 			admin.GET("/candidates", handlers.GetCandidates)
 			admin.POST("/candidates", handlers.CreateCandidate)
 			admin.DELETE("/candidates/:id", handlers.DeleteCandidate)
-
-			// Voters
 			admin.GET("/voters", handlers.GetVoters)
-			admin.POST("/voters", handlers.CreateVoter)
+			admin.GET("/results", handlers.GetResults)
 		}
 	}
-
 	return r
 }

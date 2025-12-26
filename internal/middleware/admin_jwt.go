@@ -13,7 +13,7 @@ func AdminJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
 		if auth == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token tidak ada"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token tidak ditemukan"})
 			return
 		}
 
@@ -24,7 +24,12 @@ func AdminJWT() gin.HandlerFunc {
 		}
 
 		tokenString := parts[1]
+
+		// PERBAIKAN: Gunakan fallback yang sama dengan admin_auth.go
 		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			secret = "defaultsecret"
+		}
 
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil

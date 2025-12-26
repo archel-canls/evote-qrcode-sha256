@@ -1,12 +1,11 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type Vote struct {
-	gorm.Model
-
-	VoterID     uint `gorm:"not null;index;uniqueIndex:idx_voter_once"`
-	CandidateID uint `gorm:"not null;index"`
-
-	VoteHash string `gorm:"type:char(64);uniqueIndex;not null"` // SHA-256 hex
+	ID          uint   `gorm:"primaryKey"`
+	VoterID     uint   `gorm:"not null"`
+	CandidateID uint   `gorm:"not null"`
+	VoteHash    string `gorm:"uniqueIndex;not null"`
+	CreatedAt   time.Time
 }

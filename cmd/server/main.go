@@ -10,19 +10,19 @@ import (
 )
 
 func main() {
-	// =============================
-	// 1. Load Environment Variable
-	// =============================
+	// ==============================
+	// 1. Load Environment Variables
+	// ==============================
 	config.LoadEnv()
 
-	// =============================
+	// ==============================
 	// 2. Connect Database
-	// =============================
+	// ==============================
 	database.Connect()
 
-	// =============================
+	// ==============================
 	// 3. Auto Migration
-	// =============================
+	// ==============================
 	if err := database.DB.AutoMigrate(
 		&models.Admin{},
 		&models.Candidate{},
@@ -33,14 +33,25 @@ func main() {
 	}
 	log.Println("✅ Database migrated")
 
-	// =============================
-	// 4. Setup Router
-	// =============================
+	// ==============================
+	// 4. Seed Default Admin
+	// ==============================
+	database.SeedAdmin()
+
+	// ==============================
+	// 5. Setup Router
+	// ==============================
 	r := routes.SetupRouter()
 
-	// =============================
-	// 5. Run Server
-	// =============================
+	// 🔐 FIX WARNING: Don't trust all proxies
+	// Aman untuk local & production basic
+	if err := r.SetTrustedProxies(nil); err != nil {
+		log.Fatalf("❌ SetTrustedProxies failed: %v", err)
+	}
+
+	// ==============================
+	// 6. Run Server
+	// ==============================
 	port := config.GetEnv("PORT", "8080")
 	log.Printf("🚀 Server running on http://localhost:%s", port)
 
